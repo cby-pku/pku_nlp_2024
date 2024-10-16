@@ -1,6 +1,6 @@
 # HW1: Python, RNN & CNN
 
-### Task 1: Python Basics
+## Task 1: Python Basics
 
 
 ### Notes
@@ -25,3 +25,23 @@ We implemented three different approaches to solve the problems, corresponding t
   - **Approach B: Using a `for` loop and `Counter`.** We utilize Python's `Counter` to count characters, then filter out the non-lowercase ones.
   
   - **Approach C: Only using a `for` loop.** A manual counting method that iterates through the string and counts each character without using any external libraries.
+
+
+## Task 2: CNN Text-classfication
+
+To reproduce the results, you can run the following code:
+First, export your wandb api key.
+```
+export WANDB_API_KEY=<your wandb API Key>
+```
+Then, run the `train.py`  and you can check the loss and accuracy in your wandb project.
+
+
+## Task3: Machine Translation with RNN
+To reproduce the results, you should first prepare for your environment.
+
+First, run `pip install -r requirements.txt`.
+You may encounter with MeCab error. Please follow https://pypi.org/project/mecab-python3/ to fix this minor bug.
+
+Second, run the `all.sh` to reproduce the resuls.
+It will prepare datasets for training firstly, and train a CBOW model for Japanese and English. Finally, using the above results to train LSTM.
