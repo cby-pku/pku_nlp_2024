@@ -26,11 +26,6 @@ class CBOWModel(nn.Module):
 
 class EarlyStopping:
     def __init__(self, patience=5, min_delta=0):
-        """
-        Early stops the training if validation loss doesn't improve after a given patience.
-        :param patience: How many epochs to wait after the last time validation loss improved.
-        :param min_delta: Minimum change in the monitored quantity to qualify as an improvement.
-        """
         self.patience = patience
         self.min_delta = min_delta
         self.counter = 0
