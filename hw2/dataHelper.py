@@ -20,19 +20,33 @@ def get_dataset(dataset_names, sep_token, num_shots=5):
     aggregated_test_texts = []
     aggregated_test_labels = []
     
+    # 计算每个数据集的标签数量
+    dataset_label_counts = {}
+    for dataset_name in dataset_names:
+        if dataset_name.endswith('_fs'):
+            base_name = dataset_name.replace('_fs', '_sup')
+            dataset = get_few_shot_dataset(base_name, sep_token, num_shots)
+        else:
+            if dataset_name == 'restaurant_sup':
+                dataset = prepare_restaurant_sup(sep_token)
+            elif dataset_name == 'laptop_sup':
+                dataset = prepare_laptop_sup(sep_token)
+            elif dataset_name == 'acl_sup':
+                dataset = prepare_acl_sup(sep_token)
+            elif dataset_name == 'agnews_sup':
+                dataset = prepare_agnews_sup()
+            else:
+                raise ValueError(f"Unsupported dataset: {dataset_name}")
+        
+        unique_labels = set(dataset['train']['label'])
+        dataset_label_counts[dataset_name] = len(unique_labels)
+    
+    # 分配标签范围
     label_offset = 0
-    global_label_map = {}
-    # 更新全局标签映射 restaurant_sup, laptop_sup, acl_sup, agnews_sup 分别映射到 0-2 3-5 6-11 12-15
-    dataset_label_ranges = {
-        'restaurant_sup': (0, 2),
-        'restaurant_fs': (0, 2),
-        'laptop_sup': (3, 5),
-        'laptop_fs': (3, 5),
-        'acl_sup': (6, 11),
-        'acl_fs': (6, 11),
-        'agnews_sup': (12, 15),
-        'agnews_fs': (12, 15)
-    }
+    dataset_label_ranges = {}
+    for dataset_name, label_count in dataset_label_counts.items():
+        dataset_label_ranges[dataset_name] = (label_offset, label_offset + label_count - 1)
+        label_offset += label_count
     
     for dataset_name in dataset_names:
         local_label_map = {}
@@ -50,12 +64,9 @@ def get_dataset(dataset_names, sep_token, num_shots=5):
                 dataset = prepare_agnews_sup()
             else:
                 raise ValueError(f"Unsupported dataset: {dataset_name}")
-            
-        if dataset_name in dataset_label_ranges:
-            start, end = dataset_label_ranges[dataset_name]
-            label_offset = start
-        else:
-            raise ValueError(f"Unsupported dataset: {dataset_name}")
+        
+        start, end = dataset_label_ranges[dataset_name]
+        label_offset = start
         unique_labels = set(dataset['train']['label'])
         
         for label in unique_labels:
