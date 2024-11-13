@@ -3,24 +3,80 @@ from datasets import Dataset, DatasetDict, load_dataset
 from collections import Counter
 from tools import logger
 
-def get_dataset(dataset_name, sep_token):
+import random
+seed = 2022
+random.seed(seed)
+
+def get_dataset(dataset_names, sep_token, num_shots=5):
     '''
-    dataset_name: str
-    sep_token: str
-    supported_dataset: restaurant_sup, laptop_sup, acl_sup, agnews_sup
+    num_shots: int, number of samples per class for few-shot datasets
+    supported_dataset: restaurant_sup, laptop_sup, acl_sup, agnews_sup, restaurant_fs, laptop_fs, acl_fs, agnews_fs
     '''
-    if dataset_name == 'restaurant_sup':
-        dataset = prepare_restaurant_sup(sep_token)
-    elif dataset_name == 'laptop_sup':
-        dataset = prepare_laptop_sup(sep_token)
-    elif dataset_name == 'acl_sup':
-        dataset = prepare_acl_sup(sep_token)
-    elif dataset_name == 'agnews_sup':
-        dataset = prepare_agnews_sup()
-    else:
-        raise ValueError(f"Unsupported dataset: {dataset_name}")
+    if isinstance(dataset_names, str):
+        dataset_names = [dataset_names]
     
-    return dataset
+    aggregated_train_texts = []
+    aggregated_train_labels = []
+    aggregated_test_texts = []
+    aggregated_test_labels = []
+    
+    label_offset = 0
+    global_label_map = {}
+    # 更新全局标签映射 restaurant_sup, laptop_sup, acl_sup, agnews_sup 分别映射到 0-2 3-5 6-11 12-15
+    dataset_label_ranges = {
+        'restaurant_sup': (0, 2),
+        'restaurant_fs': (0, 2),
+        'laptop_sup': (3, 5),
+        'laptop_fs': (3, 5),
+        'acl_sup': (6, 11),
+        'acl_fs': (6, 11),
+        'agnews_sup': (12, 15),
+        'agnews_fs': (12, 15)
+    }
+    
+    for dataset_name in dataset_names:
+        local_label_map = {}
+        if dataset_name.endswith('_fs'):
+            base_name = dataset_name.replace('_fs', '_sup')
+            dataset = get_few_shot_dataset(base_name, sep_token, num_shots)
+        else:
+            if dataset_name == 'restaurant_sup':
+                dataset = prepare_restaurant_sup(sep_token)
+            elif dataset_name == 'laptop_sup':
+                dataset = prepare_laptop_sup(sep_token)
+            elif dataset_name == 'acl_sup':
+                dataset = prepare_acl_sup(sep_token)
+            elif dataset_name == 'agnews_sup':
+                dataset = prepare_agnews_sup()
+            else:
+                raise ValueError(f"Unsupported dataset: {dataset_name}")
+            
+        if dataset_name in dataset_label_ranges:
+            start, end = dataset_label_ranges[dataset_name]
+            label_offset = start
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset_name}")
+        unique_labels = set(dataset['train']['label'])
+        
+        for label in unique_labels:
+            if label not in local_label_map:
+                local_label_map[label] = label_offset
+                label_offset += 1
+        
+        train_labels = [local_label_map[label] for label in dataset['train']['label']]
+        test_labels = [local_label_map[label] for label in dataset['test']['label']]
+        
+        logger(f"Dataset {dataset_name} label mapping: {local_label_map} Train label range {min(train_labels)}-{max(train_labels)}")
+        
+        aggregated_train_texts.extend(dataset['train']['text'])
+        aggregated_train_labels.extend(train_labels)
+        aggregated_test_texts.extend(dataset['test']['text'])
+        aggregated_test_labels.extend(test_labels)
+    
+    train_dataset = Dataset.from_dict({'text': aggregated_train_texts, 'label': aggregated_train_labels})
+    test_dataset = Dataset.from_dict({'text': aggregated_test_texts, 'label': aggregated_test_labels})
+    
+    return DatasetDict({'train': train_dataset, 'test': test_dataset})
 
 def prepare_restaurant_sup(sep_token):
     train_texts, train_labels = load_absa_data('./dataset/SemEval14-res/train.json', sep_token)
@@ -96,12 +152,11 @@ def load_acl_data(file_path, sep_token):
     
     return texts, labels
 
-def prepare_few_shot_dataset(dataset, num_shots, seed=42):
+def prepare_few_shot_dataset(dataset, num_shots):
     """
     num_shots: int
     """
-    import random
-    random.seed(seed)
+
     
     few_shot_train = []
     label_to_samples = {}
@@ -129,7 +184,7 @@ def get_few_shot_dataset(dataset_name, sep_token, num_shots):
     return prepare_few_shot_dataset(dataset, num_shots)
 
 
-def debug_dataset(dataset_name, sep_token, shot_type, num_shots=None):
+def debug_single_dataset(dataset_name, sep_token, shot_type, num_shots=None):
     """
     shot_type: str, 'zero_shot' or 'few_shot'
     num_shots: int, number of samples per class (only for few_shot)
@@ -153,12 +208,23 @@ def debug_dataset(dataset_name, sep_token, shot_type, num_shots=None):
     label_distribution = Counter(labels)
     print("Label distribution:", label_distribution)
     
+def debug_multiple_datasets(dataset_names, sep_token, num_shots=None):
+    sep_token = '<sep>'
+    aggregated_dataset = get_dataset(dataset_names, sep_token, num_shots)
+    print(aggregated_dataset['train'][0])
+    print(len(aggregated_dataset['train']))
+    labels = [example['label'] for example in aggregated_dataset['train']]
+    label_distribution = Counter(labels)
+    print("Label distribution:", label_distribution)
     
 if __name__ == '__main__':
-    zero_shot_dataset_list = ['restaurant_sup', 'laptop_sup', 'acl_sup', 'agnews_sup']
+    zero_shot_dataset_list = ['agnews_sup','restaurant_sup','laptop_sup','acl_sup']
     few_shot_dataset_list = ['restaurant_fs', 'laptop_fs', 'acl_fs', 'agnews_fs']
     sep_token = '<sep>'
     for dataset_name in zero_shot_dataset_list:
-        debug_dataset(dataset_name, sep_token, 'zero_shot')
+        debug_single_dataset(dataset_name, sep_token, 'zero_shot')
     for dataset_name in few_shot_dataset_list:
-        debug_dataset(dataset_name, sep_token, 'few_shot', num_shots=5)
+        debug_single_dataset(dataset_name, sep_token, 'few_shot', num_shots=5)
+    
+    multiple_dataset_names = ['restaurant_fs', 'laptop_fs', 'acl_fs']
+    debug_multiple_datasets(multiple_dataset_names, sep_token, num_shots=5)
