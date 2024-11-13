@@ -20,7 +20,6 @@ def get_dataset(dataset_names, sep_token, num_shots=5):
     aggregated_test_texts = []
     aggregated_test_labels = []
     
-    # 计算每个数据集的标签数量
     dataset_label_counts = {}
     for dataset_name in dataset_names:
         if dataset_name.endswith('_fs'):
@@ -41,7 +40,6 @@ def get_dataset(dataset_names, sep_token, num_shots=5):
         unique_labels = set(dataset['train']['label'])
         dataset_label_counts[dataset_name] = len(unique_labels)
     
-    # 分配标签范围
     label_offset = 0
     dataset_label_ranges = {}
     for dataset_name, label_count in dataset_label_counts.items():
@@ -228,6 +226,8 @@ def debug_multiple_datasets(dataset_names, sep_token, num_shots=None):
     label_distribution = Counter(labels)
     print("Label distribution:", label_distribution)
     
+    
+# NOTE For debugging
 if __name__ == '__main__':
     zero_shot_dataset_list = ['agnews_sup','restaurant_sup','laptop_sup','acl_sup']
     few_shot_dataset_list = ['restaurant_fs', 'laptop_fs', 'acl_fs', 'agnews_fs']

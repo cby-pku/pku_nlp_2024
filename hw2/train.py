@@ -51,7 +51,6 @@ def train_and_evaluate(model_args, data_args, training_args, num_runs=5):
 
     all_results = {"accuracy": [], "macro_f1": [], "micro_f1": []}
 
-    # Run multiple experiments to average and calculate standard deviation
     for run in range(num_runs):
         logger.info(f"Run {run+1}/{num_runs} for model {model_args.model_name_or_path} on {data_args.dataset_name}")
         
@@ -81,10 +80,6 @@ def train_and_evaluate(model_args, data_args, training_args, num_runs=5):
         def compute_metrics(eval_pred):
             predictions, labels = eval_pred
             predictions = np.argmax(predictions, axis=1)
-            
-            # Debugging: Print predictions and labels
-            print("Predictions:", predictions)
-            print("Labels:", labels)
          
             # Load individual metrics
             accuracy_metric = evaluate.load("accuracy")
@@ -98,8 +93,8 @@ def train_and_evaluate(model_args, data_args, training_args, num_runs=5):
             
             return {
                 "accuracy": accuracy,
-                "macro_f1": f1_macro,
-                "micro_f1": f1_micro
+                "eval_macro_f1": f1_macro,
+                "eval_micro_f1": f1_micro
             }
 
         # Initialize Trainer
@@ -116,30 +111,31 @@ def train_and_evaluate(model_args, data_args, training_args, num_runs=5):
         # Train and evaluate
         train_result = trainer.train()
 
-
         # Save the model to the custom path
         trainer.save_model(training_args.output_dir)
-
+        
+        # Evaluation
         metrics = trainer.evaluate()
         wandb.log(metrics)
 
         # Save results for this run
+        print(metrics.keys())
+        # NOTE metrics keys are eval_accuracy, eval_macro_f1, eval_micro_f1 , not aligned with return values of compute_metrics: accuracy, macro_f1, micro_f1
         all_results["accuracy"].append(metrics["eval_accuracy"])
-        all_results["macro_f1"].append(metrics["macro_f1"])
-        all_results["micro_f1"].append(metrics["micro_f1"])
+        all_results["macro_f1"].append(metrics["eval_macro_f1"])
+        all_results["micro_f1"].append(metrics["eval_micro_f1"])
 
         # Log metrics
         trainer.log_metrics("eval", metrics)
-
     # Compute averages and standard deviations
     final_results = {metric: {"mean": mean(values), "std": stdev(values)} for metric, values in all_results.items()}
-    wandb.log(final_results)  # Log final results to WandB
+    wandb.log(final_results) 
 
     logger.info("Final averaged results over runs:")
     logger.info(final_results)
 
+
 if __name__ == "__main__":
-    # Parse arguments
     parser = HfArgumentParser((ModelArguments, DataArguments))
     model_args, data_args = parser.parse_args_into_dataclasses()
 
@@ -168,5 +164,5 @@ if __name__ == "__main__":
         greater_is_better=True,
     )
 
-    num_runs = 1  
+    num_runs = 2
     train_and_evaluate(model_args, data_args, training_args, num_runs=num_runs)
