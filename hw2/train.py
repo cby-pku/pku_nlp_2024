@@ -41,9 +41,9 @@ class DataArguments:
     dataset_name: str = field(metadata={"help": "The name of the dataset to use"})
     max_seq_length: int = field(default=128, metadata={"help": "Maximum sequence length for tokenization"})
 
-# Main training function
+
 def train_and_evaluate(model_args, data_args, training_args, num_runs=5):
-    # Initialize wandb with a custom run name
+
     wandb.init(
         project="transformer_experiment",
         name=f"{data_args.dataset_name}_{model_args.model_name_or_path}"
@@ -168,6 +168,5 @@ if __name__ == "__main__":
         greater_is_better=True,
     )
 
-    # Run a single experiment with the provided model and dataset
-    num_runs = 1  # Number of runs to average and calculate std deviation
+    num_runs = 1  
     train_and_evaluate(model_args, data_args, training_args, num_runs=num_runs)
