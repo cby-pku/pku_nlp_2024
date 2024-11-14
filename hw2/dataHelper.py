@@ -6,6 +6,8 @@ from tools import logger
 import random
 seed = 2022
 random.seed(seed)
+import os
+current_dir = os.path.dirname(__file__)
 
 def get_dataset(dataset_names, sep_token, num_shots=5):
     '''
@@ -88,8 +90,8 @@ def get_dataset(dataset_names, sep_token, num_shots=5):
     return DatasetDict({'train': train_dataset, 'test': test_dataset})
 
 def prepare_restaurant_sup(sep_token):
-    train_texts, train_labels = load_absa_data('./dataset/SemEval14-res/train.json', sep_token)
-    test_texts, test_labels = load_absa_data('./dataset/SemEval14-res/test.json', sep_token)
+    train_texts, train_labels = load_absa_data(os.path.join(current_dir, 'dataset/SemEval14-res/train.json'), sep_token)
+    test_texts, test_labels = load_absa_data(os.path.join(current_dir, 'dataset/SemEval14-res/test.json'), sep_token)
     
     train_dataset = Dataset.from_dict({'text': train_texts, 'label': train_labels})
     test_dataset = Dataset.from_dict({'text': test_texts, 'label': test_labels})
@@ -97,8 +99,8 @@ def prepare_restaurant_sup(sep_token):
     return DatasetDict({'train': train_dataset, 'test': test_dataset})
 
 def prepare_laptop_sup(sep_token):
-    train_texts, train_labels = load_absa_data('./dataset/SemEval14-laptop/train.json', sep_token)
-    test_texts, test_labels = load_absa_data('./dataset/SemEval14-laptop/test.json', sep_token)
+    train_texts, train_labels = load_absa_data(os.path.join(current_dir, 'dataset/SemEval14-laptop/train.json'), sep_token)
+    test_texts, test_labels = load_absa_data(os.path.join(current_dir, 'dataset/SemEval14-laptop/test.json'), sep_token)
     
     train_dataset = Dataset.from_dict({'text': train_texts, 'label': train_labels})
     test_dataset = Dataset.from_dict({'text': test_texts, 'label': test_labels})
@@ -106,8 +108,8 @@ def prepare_laptop_sup(sep_token):
     return DatasetDict({'train': train_dataset, 'test': test_dataset})
 
 def prepare_acl_sup(sep_token):
-    train_texts, train_labels = load_acl_data('./dataset/acl_sup/train.jsonl', sep_token)
-    test_texts, test_labels = load_acl_data('./dataset/acl_sup/test.jsonl', sep_token)
+    train_texts, train_labels = load_acl_data(os.path.join(current_dir, 'dataset/acl_sup/train.jsonl'), sep_token)
+    test_texts, test_labels = load_acl_data(os.path.join(current_dir, 'dataset/acl_sup/test.jsonl'), sep_token)
     
     train_dataset = Dataset.from_dict({'text': train_texts, 'label': train_labels})
     test_dataset = Dataset.from_dict({'text': test_texts, 'label': test_labels})

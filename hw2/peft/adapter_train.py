@@ -14,11 +14,16 @@ from transformers import (
     set_seed,
 )
 import evaluate
+from transformers import RobertaModel, RobertaConfig
+import torch.nn as nn
+import sys
+sys.path.append('/data/align-anything/boyuan/nlp-workspace/pku_nlp_2024/hw2')
 
 from dataHelper import get_dataset  
 import wandb
 from statistics import mean, stdev
 from datetime import datetime
+from adapter import RobertaWithAdapter, Adapter
 
 
 
@@ -42,11 +47,13 @@ class DataArguments:
     max_seq_length: int = field(default=128, metadata={"help": "Maximum sequence length for tokenization"})
 
 
+
+
 def train_and_evaluate(model_args, data_args, training_args, num_runs=5):
 
     wandb.init(
         project="transformer_experiment",
-        name=f"{data_args.dataset_name}_{model_args.model_name_or_path}"
+        name=f"{data_args.dataset_name}_{model_args.model_name_or_path}-adapter"
     )
 
     all_results = {"accuracy": [], "macro_f1": [], "micro_f1": []}
@@ -55,7 +62,6 @@ def train_and_evaluate(model_args, data_args, training_args, num_runs=5):
         logger.info(f"Run {run+1}/{num_runs} for model {model_args.model_name_or_path} on {data_args.dataset_name}")
         
         # Set seed for reproducibility
-        # set_seed(training_args.seed + run)
         set_seed(2024)
 
         # Load dataset
@@ -66,7 +72,11 @@ def train_and_evaluate(model_args, data_args, training_args, num_runs=5):
 
         config = AutoConfig.from_pretrained(model_args.model_name_or_path, num_labels=num_labels)
         tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
-        model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=config)
+        model = RobertaWithAdapter(model_args.model_name_or_path)
+
+        # 仅微调Adapter
+        for param in model.roberta.parameters():
+            param.requires_grad = False
 
         # Tokenize dataset
         def preprocess_function(examples):
