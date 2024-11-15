@@ -46,7 +46,7 @@ def train_and_evaluate(model_args, data_args, training_args, num_runs=5):
 
     wandb.init(
         project="transformer_experiment",
-        name=f"{data_args.dataset_name}_{model_args.model_name_or_path}"
+        name=f"bs4_{data_args.dataset_name}_{model_args.model_name_or_path}"
     )
 
     all_results = {"accuracy": [], "macro_f1": [], "micro_f1": []}
@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     model_save_path = os.path.join(
-            './results/models', 
+            './results/models-bs4', 
             f"{model_args.model_name_or_path}_{data_args.dataset_name}_{current_time}"
         )
     os.makedirs(model_save_path, exist_ok=True)
@@ -151,8 +151,8 @@ if __name__ == "__main__":
         eval_strategy="epoch",
         save_strategy="epoch",
         learning_rate=2e-5,
-        per_device_train_batch_size=8,
-        per_device_eval_batch_size=8,
+        per_device_train_batch_size=4,
+        per_device_eval_batch_size=4,
         num_train_epochs=3,
         weight_decay=0.01,
         logging_dir='./results/logs',

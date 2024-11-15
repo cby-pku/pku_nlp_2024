@@ -1,5 +1,5 @@
 __pycache__/
 dataset/
 wandb/
-models/ 
-
+models/
+results/

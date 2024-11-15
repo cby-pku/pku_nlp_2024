@@ -5,6 +5,8 @@ datasets=("restaurant_sup" "acl_sup" "agnews_sup")
 
 for model in "${models[@]}"; do
     for dataset in "${datasets[@]}"; do
-        python adapter_train.py --model_name_or_path "$model" --dataset_name "$dataset"
+        python adapter_train.py \
+            --model_name_or_path "$model" \
+            --dataset_name "$dataset"
     done
 done
