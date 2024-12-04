@@ -50,11 +50,9 @@ class InferenceProfiler:
         
         total_tokens = 0
         start_time = time.time()
+        first_token_time = None
         
         for prompt in tqdm(prompts):
-            # DEBUG 
-            # NOTE This part we allocate the memory for the input to self.device, which is different from the memory usage of the model
-            # Fixed bug
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt").to(device)
             
             with torch.no_grad():
@@ -65,6 +63,9 @@ class InferenceProfiler:
                     pad_token_id=self.tokenizer.eos_token_id
                 )
             
+            if first_token_time is None:
+                first_token_time = time.time() - start_time
+            
             total_tokens += output.shape[1]
         
         end_time = time.time()
@@ -72,6 +73,7 @@ class InferenceProfiler:
         results = {
             "total_time": end_time - start_time,
             "tokens_per_second": total_tokens / (end_time - start_time),
+            "first_token_latency": first_token_time
         }
         
         if torch.cuda.is_available():
@@ -81,20 +83,16 @@ class InferenceProfiler:
             
         return results
 
+def load_prompts_from_file(file_path: str) -> List[str]:
+    with open(file_path, 'r', encoding='utf-8') as file:
+        prompts = file.readlines()
+    return [prompt.strip() for prompt in prompts]
+
 def main():
     profiler = InferenceProfiler()
-    test_prompts = [
-        "Once upon a time",
-        "Peking University is",
-        "The capital of China is",
-        "Artificial intelligence is transforming",
-        "The future of technology is",
-        "In the year 2050,",
-        "Climate change impacts",
-        "The history of the internet",
-        "Quantum computing will",
-        "Machine learning algorithms are"
-    ]
+    
+    # 从文件中加载测试提示
+    test_prompts = load_prompts_from_file("test_prompts.txt")
     
     configs = [
         {"name": "Baseline (no cache)", "cache": False, "quant": None},
@@ -128,7 +126,8 @@ def main():
         result_dict = {
             "config_name": config["name"],
             "total_time": results["total_time"],
-            "tokens_per_second": results["tokens_per_second"]
+            "tokens_per_second": results["tokens_per_second"],
+            "first_token_latency": results["first_token_latency"]
         }
         if "peak_memory_mb" in results:
             result_dict["peak_memory_mb"] = results["peak_memory_mb"]
@@ -137,8 +136,8 @@ def main():
         all_results.append(result_dict)
     
     df = pd.DataFrame(all_results)
-    df.to_csv("inference_results.csv", index=False)
-    print("Results have been saved to inference_results.csv")
+    df.to_csv("inference_results_gpt2.csv", index=False)
+    print("Results have been saved to inference_results_gpt2.csv")
 
 if __name__ == "__main__":
     main()

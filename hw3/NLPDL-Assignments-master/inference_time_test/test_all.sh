@@ -1,0 +1,2 @@
+python benchmark_gpt2.py
+python benchmark_general.py

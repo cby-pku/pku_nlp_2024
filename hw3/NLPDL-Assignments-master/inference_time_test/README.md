@@ -1,4 +1,8 @@
-# GPT-2 Inference Evaluation Tool
+# Inference Evaluation Tool
+We implement two python files to evaluate the inference performance of the model.
+
+`benchmark_gpt2.py` is used to evaluate the inference performance of the GPT-2 model.
+`benchmark_general.py` is used to evaluate the inference performance of the general model.
 
 The file measures:
 - Inference speed (tokens/second)
@@ -13,7 +17,7 @@ The file measures:
 ## Usage
 
 ```bash
-python benchmark.py
+python benchmark_gpt2.py
 ```
 
 Results will be saved to `inference_results.csv`.
