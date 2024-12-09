@@ -1,0 +1,5 @@
+Filename,Accuracy
+Reflexion_responses.math-evaluation_re_output.json,1.0
+ICL_responses.math-evaluation_re_output.json,1.0
+Naive_responses.math-evaluation_re_output.json,1.0
+CoT_responses.math-evaluation_re_output.json,1.0

@@ -1,4 +1,4 @@
-## PartI: Inference Efficiency Test
+## Part I: Inference Efficiency Test
 ```
 cd task1/inference_efficiency_test
 ```
@@ -11,7 +11,7 @@ Experiment with quantization techniques: Measure and compare GPU memory usage an
 
 
 
-## PartII: Customized GPT-2 Model
+## Part II: Customized GPT-2 Model
 ```
 cd task1/main
 ```
@@ -22,9 +22,29 @@ You can use the following command to run the code:
 python main.py
 ```
 
-## PartIII: LLM Reasoning Techniques
+## Part III: LLM Reasoning Techniques
 ```
 cd task2/reasoning
 ```
 Implement the reasoning techniques discussed in the lecture.
+
+Use the following command to run the code:
+
+```
+python main.py
+
+``` 
+
+
+Use the following command to convert the results.csv to results.json
+```
+python tools/csv_to_json.py
+```
+
+And consider the evaluation of the reasoning techniques, we use GPT4o as the evaluator.
+
+Use the following command to run the code:
+```
+python tools/gpt4o_eval.py
+```
 
