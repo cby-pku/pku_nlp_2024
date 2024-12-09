@@ -1,6 +1,6 @@
 ## PartI: Inference Efficiency Test
 ```
-cd inference_efficiency_test
+cd task1/inference_efficiency_test
 ```
 Test and compare inference efficiency (basic) metrics and compare the inference throughput (tokens/s) between different models
 
@@ -13,7 +13,7 @@ Experiment with quantization techniques: Measure and compare GPU memory usage an
 
 ## PartII: Customized GPT-2 Model
 ```
-cd main
+cd task1/main
 ```
 Implement a customized GPT-2 model with KV-cache by inheriting from the `GPT2LMHeadModel` class provided in the `transformers` library.
 
@@ -24,7 +24,7 @@ python main.py
 
 ## PartIII: LLM Reasoning Techniques
 ```
-cd reasoning
+cd task2/reasoning
 ```
 Implement the reasoning techniques discussed in the lecture.
 
