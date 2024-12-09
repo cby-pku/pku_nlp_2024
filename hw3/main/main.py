@@ -58,13 +58,13 @@ def golden_greedy_decoding_wo_cache(batch):
 
 if __name__ == "__main__":
     MAX_NEW_LENGTH = 100
-    bsz = 2
+    bsz = 1
     times = [0, 0]
 
     tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2", use_cache=False) # NOTE maybe need to set use_cache=True
     tokenizer.padding_side = 'left'
     tokenizer.pad_token = tokenizer.eos_token
-    original_model = AutoModelForCausalLM.from_pretrained("openai-community/gpt2", attn_implementation="eager", device_map='cuda', use_cache=True)
+    original_model = AutoModelForCausalLM.from_pretrained("openai-community/gpt2", attn_implementation="eager", device_map='cuda', use_cache=False)
     custom_model = CustomizedGPT2LMHeadModel.from_pretrained("openai-community/gpt2", attn_implementation="eager", device_map="cuda", use_cache=True)
 
     with open("data.txt") as f:
@@ -78,8 +78,8 @@ if __name__ == "__main__":
         times[0] += golden_wo_cache_time
         times[1] += custom_time
         
-        print(f'golden_wo_cache_res: {golden_wo_cache_res}')
-        print(f'custom_res: {custom_res}')
+        # print(f'golden_wo_cache_res: {golden_wo_cache_res}')
+        # print(f'custom_res: {custom_res}')
 
         assert torch.equal(golden_wo_cache_res, custom_res), "Decoding results are not equal"
 

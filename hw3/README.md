@@ -17,4 +17,14 @@ cd main
 ```
 Implement a customized GPT-2 model with KV-cache by inheriting from the `GPT2LMHeadModel` class provided in the `transformers` library.
 
-## PartIII: 
+You can use the following command to run the code:
+```
+python main.py
+```
+
+## PartIII: LLM Reasoning Techniques
+```
+cd reasoning
+```
+Implement the reasoning techniques discussed in the lecture.
+

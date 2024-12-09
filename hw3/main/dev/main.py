@@ -12,25 +12,24 @@ def customized_greedy_decoding(batch):
     attention_mask = tokenized_batch['attention_mask']
     res = input_ids
     start_time = time.time()
-    past_key_values = None  # 初始化 past_key_values
+    past_key_values = None
 
     for timestep in range(MAX_NEW_LENGTH):
         outputs = custom_model(
             input_ids=input_ids,
             attention_mask=attention_mask,
             past_key_values=past_key_values,
-            use_cache=True  # 确保使用缓存
+            use_cache=True
         )
         logits = outputs['logits']
-        past_key_values = outputs['past_key_values']  # 更新 past_key_values
+        past_key_values = outputs['past_key_values']
 
-        # 获取最后一个时间步的预测
         next_token = torch.argmax(logits[:, -1, :], dim=-1, keepdim=True)
         res = torch.cat([res, next_token], dim=-1)
 
-        # 更新 input_ids 为下一个时间步的输入，仅包含新生成的 token
         input_ids = next_token
         attention_mask = torch.ones_like(input_ids)  # 更新 attention_mask
+        # attention_mask = torch.cat([attention_mask, torch.ones_like(next_token)], dim=-1)
 
     return res, time.time() - start_time
 
@@ -59,7 +58,7 @@ def golden_greedy_decoding_wo_cache(batch):
 
 if __name__ == "__main__":
     MAX_NEW_LENGTH = 100
-    bsz = 16
+    bsz = 2
     times = [0, 0]
 
     tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2", use_cache=False) # NOTE maybe need to set use_cache=True

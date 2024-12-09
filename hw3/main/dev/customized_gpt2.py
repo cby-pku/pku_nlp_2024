@@ -1,4 +1,3 @@
-from turtle import forward
 from typing import Optional, Tuple, Union
 import torch
 import torch.utils.checkpoint
@@ -18,7 +17,7 @@ class CustomizedGPT2Attention(GPT2Attention):
 
     def forward(
         self,
-        hidden_states: Optional[Tuple[torch.FloatTensor]],
+        hidden_states: torch.FloatTensor,
         attention_mask: Optional[torch.FloatTensor] = None,
         layer_past: Optional[Tuple[torch.Tensor]] = None,
         use_cache: Optional[bool] = None,
